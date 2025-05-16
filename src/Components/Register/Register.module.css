@@ -1,0 +1,10 @@
+
+.formControl {
+  font-family: "Inter Tight", sans-serif;
+}
+
+.formControl:focus {
+  box-shadow: 0 0 0 0.25rem rgba(0, 200, 83, 0.25);
+  border-color: rgba(0, 200, 83, 0.6);
+}
+

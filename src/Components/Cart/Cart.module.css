@@ -1,0 +1,17 @@
+.cartColor {
+  background-color: rgba(255, 255, 255, 0.6);
+}
+
+.clearBtn {
+  width: 10%;
+  font-weight: 600;
+}
+
+.count {
+  transition: all 0.3s;
+}
+
+.count:hover {
+  background-color: #63AF18;
+  color: #fff;
+}
