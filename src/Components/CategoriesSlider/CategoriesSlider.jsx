@@ -29,7 +29,7 @@ export default function CategoriesSlider() {
     getCategories();
   }, []);
 
-  const excludedCategories = ["Baby & Toys", "Mobiles", "Music"];
+  const excludedCategories = ["Baby & Toys", "Mobiles", "Music", "Men's Fashion", "Books"];
 
   const filteredCategories = categories.filter(category =>
     !excludedCategories.includes(category.name)

@@ -46,7 +46,7 @@ export default function Products() {
     getProducts();
   }, [])
 
-  const excludedTitles = ["Logo T-Shirt", "Woman Karma", "Victus 16-D1016Ne"];
+  const excludedTitles = ["Logo T-Shirt", "Woman Karma", "Victus 16-D1016Ne", "Essentials Embroidered", "Adicolor Classics", "Slim Fit", "Relaxed Fit", "ESS Big", "Sportswear Club", "Court Tennis", "Crew Neck", "Standard Pattern", "Polo Collar"];
 
   const filteredProducts = products.filter(product =>
     !excludedTitles.includes(product.title.split(" ").splice(0, 2).join(" "))
