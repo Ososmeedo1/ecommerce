@@ -35,6 +35,12 @@ export default function Login() {
     formik.setValues(testAccount)
   }
 
+  async function quickLogin() {
+    setApiError(false)
+    formik.setValues(testAccount)
+    await login(testAccount)
+  }
+
   async function copyCredential(value, label) {
     try {
       await navigator.clipboard.writeText(value)
@@ -126,7 +132,7 @@ export default function Login() {
           <p className='mb-2'>This account is already created in the API, so users can login directly without registering.</p>
           <p className='mb-1'><span className='fw-semibold'>Email:</span> {testAccount.email} <button type='button' className={style.copyBtn} onClick={() => copyCredential(testAccount.email, 'Email')}>Copy</button></p>
           <p className='mb-3'><span className='fw-semibold'>Password:</span> {testAccount.password} <button type='button' className={style.copyBtn} onClick={() => copyCredential(testAccount.password, 'Password')}>Copy</button></p>
-          <button type='button' className='btn btn-outline-success' onClick={fillTestAccount}>Use Test Account Credentials</button>
+          <button type='button' className='btn btn-success' onClick={quickLogin} disabled={loading}>Quick Login (Employer Test)</button>
         </div>
 
         <div className="links d-flex justify-content-between pt-3">
