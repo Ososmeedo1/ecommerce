@@ -1,5 +1,3 @@
-
-
 :root {
   --main-color: #63AF18;
   --light-color: #f0f3f2;
@@ -73,7 +71,8 @@ a:hover {
   background-color: #539813;
 }
 
-.product-footer .addToCart,.addToWishList {
+.product-footer .addToCart,
+.addToWishList {
   opacity: 0;
   transform: translateY(20px);
   transition: opacity 0.3s ease, transform 0.3s ease, background-color 0.3s ease;
@@ -90,6 +89,14 @@ a:hover {
   opacity: 1;
   transform: translateY(0);
   pointer-events: auto;
+}
+
+.product-footer .addToCart:disabled,
+.product-footer .addToWishList:disabled,
+.siteBtn:disabled,
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.75;
 }
 
 .product:hover .product-footer .addToWishList {
@@ -169,4 +176,20 @@ a:hover {
 ::-webkit-scrollbar-thumb {
   background-color: #00e676;
   border-radius: 12px;
+}
+
+@media (max-width: 768px) {
+
+  .product-footer .addToCart,
+  .product-footer .addToWishList {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+    min-height: 44px;
+  }
+
+  .siteBtn,
+  .btn {
+    min-height: 44px;
+  }
 }

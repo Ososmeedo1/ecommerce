@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import style from './Cart.module.css'
 import { CartContext } from '../../context/CartContext';
 import { PulseLoader } from 'react-spinners';
-import { Helmet } from 'react-helmet';
+import { setPageMeta } from '../../utils/seo.js';
 
 export default function Cart() {
   let { getCartItems, deleteCartItems, updateCartItems, clearAllCartItems } = useContext(CartContext);
@@ -40,26 +40,24 @@ export default function Cart() {
   }
 
   async function clearCart() {
-  setLoading(true);
-  await clearAllCartItems();
-  setCart(null);
-  setLoading(false);
-}
+    setLoading(true);
+    await clearAllCartItems();
+    setCart(null);
+    setLoading(false);
+  }
 
 
   useEffect(() => {
     getItems();
+    setPageMeta({
+      title: 'Your Cart | Fresh Cart',
+      description: 'Review your cart, update quantities, and continue to checkout.'
+    })
 
   }, [])
 
 
   return <>
-
-
-    <Helmet>
-      <meta charSet="utf-8" />
-      <title>Cart</title>
-    </Helmet>
 
 
     <div className={`${style.cartColor} p-2 mt-5`}>
@@ -70,9 +68,9 @@ export default function Cart() {
             <h2 className='secondary-font fw-semibold'>Cart</h2>
             <button className={`${style.clearBtn} btn btn-danger`} onClick={clearCart}>Clear All</button>
           </div>
-            <div className="numbers d-flex justify-content-between py-4 fw-semibold fs-4 text-secondary">
-              <p>Total Price: <span className='text-color'>{cart.data.totalCartPrice} EGP</span></p>
-              <p>Total Number: <span className='text-color'>{cart.numOfCartItems}</span></p>
+          <div className="numbers d-flex justify-content-between py-4 fw-semibold fs-4 text-secondary">
+            <p>Total Price: <span className='text-color'>{cart.data.totalCartPrice} EGP</span></p>
+            <p>Total Number: <span className='text-color'>{cart.numOfCartItems}</span></p>
           </div>
         </div>
         : ''}
@@ -103,7 +101,7 @@ export default function Cart() {
             </div>
           </div>
         </div>)}
-      {cart ? <Link to={`/shippingaddress/${cart.data._id}`} className='bg-color btn siteBtn text-light mt-3 w-100 fw-semibold'>Checkout</Link> : ''}
+        {cart ? <Link to={`/shippingaddress/${cart.data._id}`} className='bg-color btn siteBtn text-light mt-3 w-100 fw-semibold'>Checkout</Link> : ''}
       </main> : <h2 className='container fw-bold'>Cart is Empty ...</h2>}
     </div>
   </>

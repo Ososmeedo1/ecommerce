@@ -4,10 +4,25 @@
   object-fit: cover;
 }
 
+.categoryCard {
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.categoryCard:hover {
+  transform: translateY(-4px);
+}
+
 .categoryTitle {
   transition: all 0.2s;
 }
 
 .categoryTitle:hover {
   color: #63AF18;
+}
+
+@media (max-width: 768px) {
+  .categoryCard {
+    min-height: 100%;
+  }
 }

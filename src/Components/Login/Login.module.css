@@ -1,1 +1,32 @@
 .Login {}
+
+.dummyCard {
+  border: 1px solid #d8e5d4;
+  background-color: #f6fbf3;
+  border-radius: 10px;
+  padding: 1rem;
+}
+
+.passwordWrap {
+  position: relative;
+}
+
+.passwordToggle {
+  position: absolute;
+  right: 10px;
+  top: calc(50% + 4px);
+  transform: translateY(-50%);
+  border: none;
+  background: transparent;
+  color: #3f6f1d;
+  font-weight: 600;
+}
+
+.copyBtn {
+  margin-left: 0.5rem;
+  border: none;
+  background-color: transparent;
+  color: #2f7d16;
+  text-decoration: underline;
+  font-size: 0.9rem;
+}

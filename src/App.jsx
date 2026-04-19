@@ -20,6 +20,8 @@ import ForgotPassword from './Components/ForgotPassword/ForgotPassword.jsx'
 import VerifyPassword from './Components/VerifyPassword/VerifyPassword.jsx'
 import ResetPassword from './Components/ResetPassword/ResetPassword.jsx'
 import NotFound from './Components/NotFound/NotFound.jsx'
+import { shouldRequireLogin } from './utils/routes.js'
+import { isUnauthorizedError } from './utils/api.js'
 
 export default function App() {
 
@@ -28,13 +30,35 @@ export default function App() {
   let { setUserToken } = useContext(UserContext);
 
   async function getCartCount() {
-    const { data } = await getCartItems();
-    setCartCount(data.numOfCartItems);
+    const response = await getCartItems()
+
+    if (response?.data?.numOfCartItems !== undefined) {
+      setCartCount(response.data.numOfCartItems)
+      return
+    }
+
+    if (isUnauthorizedError(response)) {
+      localStorage.removeItem('userToken')
+      setUserToken(null)
+    }
+
+    setCartCount(0)
   }
 
   async function getWishListCount() {
-    const { data } = await getWishListItems();
-    setWishListCount(data.count);
+    const response = await getWishListItems()
+
+    if (response?.data?.count !== undefined) {
+      setWishListCount(response.data.count)
+      return
+    }
+
+    if (isUnauthorizedError(response)) {
+      localStorage.removeItem('userToken')
+      setUserToken(null)
+    }
+
+    setWishListCount(0)
 
   }
 
@@ -43,14 +67,14 @@ export default function App() {
   const routers = createBrowserRouter([
     {
       path: '/', element: <Layout />, children: [
-        { index: true, element: <ProtectedRoute><Home /></ProtectedRoute> },
+        { index: true, element: <Home /> },
         { path: 'cart', element: <ProtectedRoute><Cart /></ProtectedRoute> },
-        { path: 'products', element: <ProtectedRoute><Products /></ProtectedRoute> },
+        { path: 'products', element: <Products /> },
         { path: 'login', element: <Login /> },
         { path: 'register', element: <Register /> },
-        { path: 'brands', element: <ProtectedRoute><Brands /></ProtectedRoute> },
-        { path: 'categories', element: <ProtectedRoute><Categories /></ProtectedRoute> },
-        { path: 'productdetails/:id', element: <ProtectedRoute><ProductDetails /></ProtectedRoute> },
+        { path: 'brands', element: <Brands /> },
+        { path: 'categories', element: <Categories /> },
+        { path: 'productdetails/:id', element: <ProductDetails /> },
         { path: 'wishlist', element: <ProtectedRoute><WishList /></ProtectedRoute> },
         { path: 'forgotpassword', element: <ForgotPassword /> },
         { path: 'verifycode', element: <VerifyPassword /> },
@@ -62,12 +86,18 @@ export default function App() {
   ])
 
   useEffect(() => {
-    if (localStorage.getItem('userToken')) {
-      setUserToken(localStorage.getItem('userToken'));
+    const storedToken = localStorage.getItem('userToken')
+
+    if (storedToken && !shouldRequireLogin(storedToken)) {
+      setUserToken(storedToken);
       // setUserInfo(JSON.parse(localStorage.getItem('userInfo')));
-      getCartCount();
+      getCartCount()
       getWishListCount()
+      return
     }
+
+    localStorage.removeItem('userToken')
+    setUserToken(null)
 
   }, [])
 

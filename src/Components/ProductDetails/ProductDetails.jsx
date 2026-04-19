@@ -1,20 +1,31 @@
 import React, { useContext, useEffect, useState } from 'react'
 import style from './ProductDetails.module.css'
-import { useParams } from 'react-router-dom'
-import axios from 'axios'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { PulseLoader } from 'react-spinners'
 import Slider from 'react-slick'
 import { CartContext } from '../../context/CartContext'
 import { WishListContext } from '../../context/WishListContext'
 import toast from 'react-hot-toast'
-import { Helmet } from 'react-helmet'
+import { UserContext } from '../../context/UserContext.jsx'
+import { getFriendlyActionErrorMessage, isSuccessResponse, isUnauthorizedError } from '../../utils/api.js'
+import { trackEvent } from '../../utils/analytics.js'
+import { handleImageFallback } from '../../utils/images.js'
+import { setPageMeta } from '../../utils/seo.js'
+import { shouldRequireLogin } from '../../utils/routes.js'
+import { fetchProductDetails } from '../../services/storeApi.js'
 
 export default function ProductDetails() {
 
   const [details, setDetails] = useState({})
   const [loading, setLoading] = useState(true)
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false)
+  const [addingCart, setAddingCart] = useState(false)
+  const [addingWish, setAddingWish] = useState(false)
+  const [isInWishList, setIsInWishList] = useState(false)
 
   const { id } = useParams();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   var settings = {
     dots: true,
@@ -26,40 +37,142 @@ export default function ProductDetails() {
   }
 
   let { addToCart } = useContext(CartContext);
-  let { addToWishList } = useContext(WishListContext);
+  let { addToWishList, deleteWishListItems, getWishListItems } = useContext(WishListContext);
+  const { userToken } = useContext(UserContext)
+
+  function requireLogin() {
+    setShowLoginPrompt(true)
+  }
+
+  function closeLoginPrompt() {
+    setShowLoginPrompt(false)
+  }
+
+  function goToLogin() {
+    setShowLoginPrompt(false)
+    const redirectTarget = `/productdetails/${id}${location.search || ''}`
+    navigate(`/login?redirect=${encodeURIComponent(redirectTarget)}`)
+  }
 
   async function getProductDetails(id) {
-    let { data } = await axios.get(`https://ecommerce.routemisr.com/api/v1/products/${id}`)
-      .catch((error) => error)
-    setDetails(data.data);
+    const response = await fetchProductDetails(id)
+    if (!response?.data?.data) {
+      setLoading(false)
+      return
+    }
+
+    const { data } = response
+    setDetails(data.data)
+    setPageMeta({
+      title: `${data.data.title} | Fresh Cart`,
+      description: data.data.description,
+      image: data.data.imageCover
+    })
     setLoading(false);
   }
 
   async function postToCart(id) {
-    let { data } = await addToCart(id);
-
-    if (data.status == 'success') {
-      toast.success(data.message);
+    if (shouldRequireLogin(userToken)) {
+      requireLogin()
+      return
     }
+
+    setAddingCart(true)
+
+    const response = await addToCart(id)
+    const isSuccess = isSuccessResponse(response)
+
+    if (isSuccess) {
+      toast.success(response.data.message)
+      trackEvent('add_to_cart_success', { productId: id, source: 'product_details' })
+      setAddingCart(false)
+      return
+    }
+
+    if (isUnauthorizedError(response)) {
+      requireLogin()
+    }
+
+    toast.error(getFriendlyActionErrorMessage(response, 'add this product to cart'))
+    setAddingCart(false)
   }
 
   async function postToWishList(id) {
-    let { data } = await addToWishList(id)
-    if (data.status == 'success') {
-      toast.success(data.message);
+    if (shouldRequireLogin(userToken)) {
+      requireLogin()
+      return
     }
+
+    setAddingWish(true)
+    if (isInWishList) {
+      const response = await deleteWishListItems(id)
+
+      if (isSuccessResponse(response)) {
+        toast.success(response.data.message)
+        trackEvent('remove_from_wishlist_success', { productId: id, source: 'product_details' })
+        setIsInWishList(false)
+        setAddingWish(false)
+        return
+      }
+
+      if (isUnauthorizedError(response)) {
+        requireLogin()
+      }
+
+      toast.error(getFriendlyActionErrorMessage(response, 'remove this product from wishlist'))
+      setAddingWish(false)
+      return
+    }
+
+    const response = await addToWishList(id)
+
+    if (isSuccessResponse(response)) {
+      toast.success(response.data.message)
+      trackEvent('add_to_wishlist_success', { productId: id, source: 'product_details' })
+      setIsInWishList(true)
+      setAddingWish(false)
+      return
+    }
+
+    if (isUnauthorizedError(response)) {
+      requireLogin()
+    }
+
+    toast.error(getFriendlyActionErrorMessage(response, 'add this product to wishlist'))
+    setAddingWish(false)
+  }
+
+  async function syncWishListState() {
+    if (shouldRequireLogin(userToken)) {
+      setIsInWishList(false)
+      return
+    }
+
+    const response = await getWishListItems()
+    const wishListItems = response?.data?.data || []
+    const existsInWishList = wishListItems.some((item) => item?._id === id)
+    setIsInWishList(existsInWishList)
   }
 
   useEffect(() => {
     getProductDetails(id)
-  }, [])
+    syncWishListState()
+  }, [id, userToken])
 
   return <>
 
-    <Helmet>
-      <meta charSet="utf-8" />
-      <title>{details.title}</title>
-    </Helmet>
+    {showLoginPrompt ?
+      <div className={style.promptOverlay}>
+        <div className={style.promptCard}>
+          <h3 className='fw-bold mb-3'>Login Required</h3>
+          <p className='mb-4'>Please login first to continue with cart or wishlist actions.</p>
+          <div className='d-flex gap-3 justify-content-center'>
+            <button className='btn btn-success px-4' onClick={goToLogin}>Login</button>
+            <button className='btn btn-outline-secondary px-4' onClick={closeLoginPrompt}>Stay here</button>
+          </div>
+        </div>
+      </div>
+      : null}
 
     {loading ? <div className="loading">
       <PulseLoader color="#63AF18" size={15} />
@@ -70,7 +183,7 @@ export default function ProductDetails() {
             <div className="col-md-4">
               <div className="slider-imgs">
                 <Slider {...settings}>
-                  {details.images.map(image => <img src={image} alt={details.title} className='w-100' key={details.id} />)}
+                  {details.images.map((image, imageIndex) => <img src={image} alt={details.title} className='w-100' key={`${details.id}-${imageIndex}`} loading='lazy' onError={handleImageFallback} />)}
                 </Slider>
               </div>
             </div>
@@ -86,11 +199,19 @@ export default function ProductDetails() {
                     {details.ratingsAverage}
                   </span>
                   <span>
-                    <svg onClick={() => { postToWishList(id) }} stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 512 512" className="text-danger cursor-pointer" height="30" width="30" xmlns="http://www.w3.org/2000/svg"><path d="M458.4 64.3C400.6 15.7 311.3 23 256 79.3 200.7 23 111.4 15.6 53.6 64.3-21.6 127.6-10.6 230.8 43 285.5l175.4 178.7c10 10.2 23.4 15.9 37.6 15.9 14.3 0 27.6-5.6 37.6-15.8L469 285.6c53.5-54.7 64.7-157.9-10.6-221.3zm-23.6 187.5L259.4 430.5c-2.4 2.4-4.4 2.4-6.8 0L77.2 251.8c-36.5-37.2-43.9-107.6 7.3-150.7 38.9-32.7 98.9-27.8 136.5 10.5l35 35.7 35-35.7c37.8-38.5 97.8-43.2 136.5-10.6 51.1 43.1 43.5 113.9 7.3 150.8z"></path></svg>
+                    <button
+                      type='button'
+                      className='btn p-0 border-0 bg-transparent cursor-pointer'
+                      onClick={() => { postToWishList(id) }}
+                      disabled={addingWish || addingCart}
+                      aria-label={isInWishList ? 'Remove from wishlist' : 'Add to wishlist'}
+                    >
+                      <i className={`${addingWish ? 'fas fa-spinner fa-spin' : `${isInWishList ? 'fas' : 'far'} fa-heart`} text-danger fs-4`}></i>
+                    </button>
                   </span>
                 </div>
                 <div className="test d-flex justify-content-center align-items-center">
-                  <button className='siteBtn btn text-light w-100' onClick={() => { postToCart(id) }}>Add To Cart</button>
+                  <button className='siteBtn btn text-light w-100' onClick={() => { postToCart(id) }} disabled={addingCart || addingWish}>{addingCart ? 'Adding...' : 'Add To Cart'}</button>
                 </div>
               </div>
             </div>

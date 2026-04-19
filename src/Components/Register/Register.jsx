@@ -1,10 +1,12 @@
 import React, { useContext, useEffect, useState } from 'react'
 import style from './Register.module.css'
 import { useFormik } from 'formik'
-import axios from 'axios'
 import { object, ref, string } from 'yup'
 import { Link, useNavigate } from 'react-router-dom'
 import { PulseLoader } from 'react-spinners'
+import { getFriendlyAuthErrorMessage } from '../../utils/api.js'
+import { setPageMeta } from '../../utils/seo.js'
+import { signUp } from '../../services/storeApi.js'
 
 export default function Register() {
 
@@ -16,12 +18,15 @@ export default function Register() {
   async function register(values) {
     setLoading(true);
 
-    const { data } = await axios.post(`https://ecommerce.routemisr.com/api/v1/auth/signup`, values)
-      .catch((error) => {
-        setLoading(false);
-        const { message } = error.response.data;
-        setApiError(message);
-      })
+    const response = await signUp(values)
+
+    if (response?.message) {
+      setLoading(false);
+      setApiError(getFriendlyAuthErrorMessage(response));
+      return
+    }
+
+    const { data } = response
 
     if (data.message == "success") {
       setLoading(false);
@@ -52,6 +57,10 @@ export default function Register() {
 
   useEffect(() => {
     document.body.style.backgroundColor = '#488855';
+    setPageMeta({
+      title: 'Register | Fresh Cart',
+      description: 'Create your Fresh Cart account to save wishlist items and checkout faster.'
+    })
 
     return () => {
       document.body.style.backgroundColor = ''

@@ -1,34 +1,67 @@
 import React, { useContext, useEffect, useState } from 'react'
 import style from './Login.module.css'
 import { useFormik } from 'formik'
-import axios from 'axios'
-import { object, ref, string } from 'yup'
-import { Link, useNavigate } from 'react-router-dom'
+import { object, string } from 'yup'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { UserContext } from '../../context/UserContext.jsx'
 import { PulseLoader } from 'react-spinners'
+import toast from 'react-hot-toast'
+import { getFriendlyAuthErrorMessage } from '../../utils/api.js'
+import { setPageMeta } from '../../utils/seo.js'
+import { trackEvent } from '../../utils/analytics.js'
+import { signIn } from '../../services/storeApi.js'
 
 export default function Login() {
 
+  const testAccount = {
+    email: 'admin@gmail.com',
+    password: 'Admin@123'
+  }
+
   const [loading, setLoading] = useState(false);
   const [apiError, setApiError] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   let { setUserToken } = useContext(UserContext)
 
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const searchParams = new URLSearchParams(location.search);
+  const redirectParam = searchParams.get('redirect');
+  const redirectPath = redirectParam && redirectParam.startsWith('/') ? redirectParam : '/';
+
+  function fillTestAccount() {
+    setApiError(false)
+    formik.setValues(testAccount)
+  }
+
+  async function copyCredential(value, label) {
+    try {
+      await navigator.clipboard.writeText(value)
+      toast.success(`${label} copied`)
+    } catch {
+      toast.error(`Unable to copy ${label.toLowerCase()} right now.`)
+    }
+  }
 
   async function login(values) {
     setLoading(true);
-    const { data } = await axios.post(`https://ecommerce.routemisr.com/api/v1/auth/signin`, values)
-      .catch((error) => {
-        setLoading(false)
-        const { message } = error.response.data;
-        setApiError(message)
-      })
+    const response = await signIn(values)
+
+    if (response?.message) {
+      setLoading(false)
+      setApiError(getFriendlyAuthErrorMessage(response))
+      return
+    }
+
+    const { data } = response
 
     if (data.message == "success") {
       localStorage.setItem('userToken', data.token)
       setUserToken(data.token)
+      trackEvent('login_success', { redirectPath })
       setLoading(false);
-      navigate('/');
+      navigate(redirectPath);
     }
   }
 
@@ -42,8 +75,8 @@ export default function Login() {
 
   const formik = useFormik({
     initialValues: {
-      name: "",
-      email: ""
+      email: "",
+      password: ""
     }, validationSchema,
     onSubmit: login
 
@@ -51,6 +84,10 @@ export default function Login() {
 
   useEffect(() => {
     document.body.style.backgroundColor = '#488855';
+    setPageMeta({
+      title: 'Login | Fresh Cart',
+      description: 'Login to Fresh Cart to manage your cart, wishlist, and checkout.'
+    })
 
     return () => {
       document.body.style.backgroundColor = ''
@@ -68,11 +105,14 @@ export default function Login() {
         <form className='pt-3' onSubmit={formik.handleSubmit}>
 
           <label htmlFor="email" className='fs-5 mt-3'>Email</label>
-          <input type="email" id='email' onChange={formik.handleChange} onBlur={formik.handleBlur} name='email' className={`${style.formControl} form-control mt-2`} />
+          <input type="email" id='email' value={formik.values.email} onChange={formik.handleChange} onBlur={formik.handleBlur} name='email' className={`${style.formControl} form-control mt-2`} />
           {formik.errors.email && formik.touched.email ? <div className='text-danger'>{formik.errors.email}</div> : null}
 
           <label htmlFor="password" className='fs-5 mt-3'>Password</label>
-          <input type="password" id='password' onChange={formik.handleChange} onBlur={formik.handleBlur} name='password' className={`${style.formControl} form-control mt-2`} />
+          <div className={style.passwordWrap}>
+            <input type={showPassword ? 'text' : 'password'} id='password' value={formik.values.password} onChange={formik.handleChange} onBlur={formik.handleBlur} name='password' className={`${style.formControl} form-control mt-2`} />
+            <button type='button' className={style.passwordToggle} onClick={() => setShowPassword((prev) => !prev)}>{showPassword ? 'Hide' : 'Show'}</button>
+          </div>
           {formik.errors.password && formik.touched.password ? <div className='text-danger'>{formik.errors.password}</div> : null}
 
           <div className="submitBtn text-center mt-4">
@@ -81,9 +121,17 @@ export default function Login() {
           </div>
         </form>
 
+        <div className={`${style.dummyCard} mt-4`}>
+          <h3 className='h5 fw-semibold mb-2'>Test Account (Already Exists)</h3>
+          <p className='mb-2'>This account is already created in the API, so users can login directly without registering.</p>
+          <p className='mb-1'><span className='fw-semibold'>Email:</span> {testAccount.email} <button type='button' className={style.copyBtn} onClick={() => copyCredential(testAccount.email, 'Email')}>Copy</button></p>
+          <p className='mb-3'><span className='fw-semibold'>Password:</span> {testAccount.password} <button type='button' className={style.copyBtn} onClick={() => copyCredential(testAccount.password, 'Password')}>Copy</button></p>
+          <button type='button' className='btn btn-outline-success' onClick={fillTestAccount}>Use Test Account Credentials</button>
+        </div>
+
         <div className="links d-flex justify-content-between pt-3">
           <Link className='text-decoration-underline text-primary' to={'/forgotpassword'}>Forgot your password</Link>
-          <Link to={'/register'}>Don't Have Acoount ?</Link>
+          <Link to={'/register'}>Don't Have Account ?</Link>
         </div>
 
       </div>
