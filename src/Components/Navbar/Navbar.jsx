@@ -5,15 +5,18 @@ import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { UserContext } from '../../context/UserContext';
 import { CartContext } from '../../context/CartContext';
 import { WishListContext } from '../../context/WishListContext';
+import { ThemeContext } from '../../context/ThemeContext.jsx';
 
 export default function Navbar() {
 
 
 
   const [isOpen, setIsOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   let { userToken, setUserToken } = useContext(UserContext);
   let { cartCount } = useContext(CartContext);
   let { wishListCount } = useContext(WishListContext);
+  const { isDarkMode, toggleTheme } = useContext(ThemeContext);
   let navigate = useNavigate();
 
 
@@ -31,6 +34,11 @@ export default function Navbar() {
     } else {
       setIsOpen(true);
     }
+  }
+
+  function closeAllMenus() {
+    setIsOpen(false)
+    setMenuOpen(false)
   }
 
   const profileRef = useRef();
@@ -58,69 +66,80 @@ export default function Navbar() {
   return <>
 
 
-    <nav className="navbar navbar-expand-lg">
-      <div className="container">
-        <Link className="navbar-brand" to="/">
-          <img src={logo} alt="Fresh Cart"/>
+    <nav className={style.navbarWrap}>
+      <div className={`container ${style.navbarInner}`}>
+        <Link className={style.brand} to="/" onClick={closeAllMenus}>
+          <img src={logo} alt="Fresh Cart" />
         </Link>
-        <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-          <span className="navbar-toggler-icon"></span>
+
+        <button className={style.menuToggle} type='button' aria-label='Toggle menu' onClick={() => setMenuOpen((prev) => !prev)}>
+          <span></span>
+          <span></span>
+          <span></span>
         </button>
-        <div className="collapse navbar-collapse" id="navbarSupportedContent">
-          <ul className="navbar-nav me-auto mb-2 mb-lg-0 text-center">
+
+        <div className={`${style.navMenu} ${menuOpen ? style.navMenuOpen : ''}`}>
+          <ul className={style.primaryLinks}>
             {userToken != null ? <>
-              <li className="nav-item">
-                <NavLink className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'} aria-current="page" to="/">Home</NavLink>
+              <li>
+                <NavLink className={({ isActive }) => isActive ? `${style.navLink} ${style.navLinkActive}` : style.navLink} aria-current="page" to="/" onClick={closeAllMenus}>Home</NavLink>
               </li>
-              <li className="nav-item">
-                <NavLink className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'} to="/products">Products</NavLink>
+              <li>
+                <NavLink className={({ isActive }) => isActive ? `${style.navLink} ${style.navLinkActive}` : style.navLink} to="/products" onClick={closeAllMenus}>Products</NavLink>
               </li>
-              <li className="nav-item">
-                <NavLink className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'} to="/categories">Categories</NavLink>
+              <li>
+                <NavLink className={({ isActive }) => isActive ? `${style.navLink} ${style.navLinkActive}` : style.navLink} to="/categories" onClick={closeAllMenus}>Categories</NavLink>
               </li>
             </> : ''}
           </ul>
-          <ul className="navbar-nav ms-auto mb-2 mb-lg-0 text-center">
+
+          <ul className={style.secondaryLinks}>
+
+            <li className={style.iconItem}>
+              <button
+                type='button'
+                className={`${style.iconLink} ${style.themeToggleBtn}`}
+                onClick={toggleTheme}
+                aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+                title={isDarkMode ? 'Light mode' : 'Dark mode'}
+              >
+                <i className={isDarkMode ? 'fas fa-sun' : 'fas fa-moon'}></i>
+              </button>
+            </li>
 
             {userToken != null ? <>
 
-              <li className='position-relative me-3'>
-                <Link className='far fa-heart fs-3 text-color' to={'wishlist'}><i></i></Link>
-                <div className={`${wishListCount ? style.count : ''}`}>
+              <li className={style.iconItem}>
+                <Link className={`${style.iconLink} far fa-heart text-color`} to={'wishlist'} onClick={closeAllMenus}><i></i></Link>
+                <div className={`${wishListCount ? style.count : ''}`} aria-hidden={!wishListCount}>
                   <span>{wishListCount ? wishListCount : ''}</span>
                 </div>
               </li>
-              <li className='position-relative me-3'>
-                <Link className='fas fa-cart-shopping fs-3 text-color' to={'cart'}><i></i></Link>
-                <div className={`${cartCount ? style.count : ''}`}>
+              <li className={style.iconItem}>
+                <Link className={`${style.iconLink} fas fa-cart-shopping text-color`} to={'cart'} onClick={closeAllMenus}><i></i></Link>
+                <div className={`${cartCount ? style.count : ''}`} aria-hidden={!cartCount}>
                   <span>{cartCount ? cartCount : ''}</span>
                 </div>
               </li>
-              <li>
 
-              </li>
-
-              <li>
-                <div className={`cursor-pointer position-relative d-flex justify-content-center me-2`} onClick={() => clickProfile(isOpen)}>
+              <li className={style.profileArea}>
+                <div className='cursor-pointer position-relative d-flex justify-content-center' onClick={() => clickProfile(isOpen)} ref={profileRef}>
                   <div className={`${style.profile}`}>
                     <span className='fw-bold text-light text-uppercase'><i className='fas fa-user'></i></span>
                   </div>
                   <div className={`${style.profileDropList} ${isOpen ? style.profileDropListActive : ''}`}>
-                    <div className="info w-100 border-2 border-bottom border-success">
-                      {/* <p className='text-color'>{userInfo}</p> */}
-                    </div>
-                    <div className={`${style.signOut} signout pt-3`} ref={profileRef} onClick={(e) => { e.stopPropagation(), logOut() }}>
+                    <div className={`${style.signOut}`} onClick={(e) => { e.stopPropagation(); logOut(); closeAllMenus(); }}>
                       <p>Sign out</p>
                     </div>
                   </div>
                 </div>
               </li>
             </> : <>
-              <li className="nav-item">
-                <NavLink className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'} to="/register">Register</NavLink>
+              <li>
+                <NavLink className={({ isActive }) => isActive ? `${style.navLink} ${style.navLinkActive}` : style.navLink} to="/register" onClick={closeAllMenus}>Register</NavLink>
               </li>
-              <li className="nav-item">
-                <NavLink className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'} to="/login">Login</NavLink>
+              <li>
+                <NavLink className={({ isActive }) => isActive ? `${style.navLink} ${style.navLinkActive}` : style.navLink} to="/login" onClick={closeAllMenus}>Login</NavLink>
               </li>
             </>}
 

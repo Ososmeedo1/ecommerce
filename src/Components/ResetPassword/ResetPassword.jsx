@@ -2,10 +2,11 @@ import React, { useContext, useEffect, useState } from 'react'
 import style from './ResetPassword.module.css'
 import { useFormik } from 'formik';
 import { object, ref, string } from 'yup';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { PulseLoader } from 'react-spinners';
 import { UserContext } from '../../context/UserContext';
-import axios from 'axios';
+import { resetPassword as resetPasswordApi } from '../../services/storeApi.js';
+import { extractApiMessage } from '../../utils/api.js';
 
 export default function ResetPassword() {
 
@@ -18,22 +19,18 @@ export default function ResetPassword() {
   async function resetPassword(values) {
 
     setLoading(true);
-    const { data } = await axios.put(`https://ecommerce.routemisr.com/api/v1/auth/resetPassword`, values)
-      .catch((error) => {
-        setLoading(false)
-        const { message } = error.response.data;
-        setApiError(message)
-      })
+    const response = await resetPasswordApi(values)
 
-      console.log(data);
-
-
-    if (data.token) {
-      setUserToken(data.token)
-      localStorage.setItem('userToken', data.token)
+    if (response?.data?.token) {
+      setUserToken(response.data.token)
+      localStorage.setItem('userToken', response.data.token)
       setLoading(false);
       navigate('/login');
+      return
     }
+
+    setLoading(false)
+    setApiError(extractApiMessage(response, 'Unable to reset password right now.'))
   }
 
   const validationSchema = object({

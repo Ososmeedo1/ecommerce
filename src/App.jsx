@@ -32,8 +32,12 @@ export default function App() {
   async function getCartCount() {
     const response = await getCartItems()
 
-    if (response?.data?.numOfCartItems !== undefined) {
-      setCartCount(response.data.numOfCartItems)
+    const itemsCount = response?.data?.numOfCartItems
+      ?? response?.data?.data?.products?.length
+      ?? response?.data?.cart?.products?.length
+
+    if (itemsCount !== undefined) {
+      setCartCount(itemsCount)
       return
     }
 

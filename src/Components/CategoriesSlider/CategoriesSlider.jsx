@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react'
 import style from './CategoriesSlider.module.css'
-import axios from 'axios';
 import Slider from 'react-slick';
+import { fetchCategories } from '../../services/storeApi.js';
 
 export default function CategoriesSlider() {
 
   const [categories, setCategories] = useState([])
-  
+
   var settings = {
     dots: true,
     infinite: true,
@@ -20,9 +20,10 @@ export default function CategoriesSlider() {
 
 
   async function getCategories() {
-    const {data} = await axios.get(`https://ecommerce.routemisr.com/api/v1/categories`)
-    .catch(error => console.log(error));
-    setCategories(data.data);
+    const response = await fetchCategories()
+    if (response?.data?.data) {
+      setCategories(response.data.data);
+    }
   }
 
   useEffect(() => {
@@ -44,7 +45,7 @@ export default function CategoriesSlider() {
           <div className="img">
             <img src={category.image} height={200} className='w-100' alt={category.name} />
             <div className="categoryName d-flex justify-content-center py-3">
-            <p>{category.name}</p>
+              <p>{category.name}</p>
             </div>
           </div>
         </div>)}

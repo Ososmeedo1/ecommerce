@@ -1,3 +1,47 @@
 .wishListColor {
   background-color: rgba(255, 255, 255, 0.6);
 }
+
+.removeBtn {
+  border: 1px solid #e8cecf;
+  color: #c43d4a;
+  background-color: #fff7f7;
+  font-weight: 600;
+  transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease;
+}
+
+.removeBtn i {
+  color: inherit;
+}
+
+.removeBtn:hover {
+  background-color: #fce9eb;
+  border-color: #e3a9af;
+  color: #b7313d;
+}
+
+.emptyState,
+.errorState {
+  margin-top: 1rem;
+  border-radius: 12px;
+  border: 1px solid #dfe8e2;
+  background: #f7faf8;
+  padding: 1rem;
+}
+
+.emptyState p,
+.errorState p {
+  color: #57665d;
+}
+
+:global(:root[data-theme='dark']) .removeBtn {
+  background-color: #3b1f22;
+  border-color: #7f434b;
+  color: #ffb4be;
+}
+
+:global(:root[data-theme='dark']) .removeBtn:hover {
+  background-color: #54292e;
+  border-color: #a15a64;
+  color: #ffd0d6;
+}

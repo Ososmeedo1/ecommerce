@@ -7,6 +7,11 @@
   padding: 1rem;
 }
 
+.dummyCard p,
+.dummyCard h3 {
+  color: #203228;
+}
+
 .passwordWrap {
   position: relative;
 }
@@ -29,4 +34,25 @@
   color: #2f7d16;
   text-decoration: underline;
   font-size: 0.9rem;
+}
+
+:global(:root[data-theme='dark']) .dummyCard {
+  border-color: var(--border-soft);
+  background-color: var(--surface-2);
+}
+
+:global(:root[data-theme='dark']) .dummyCard p,
+:global(:root[data-theme='dark']) .dummyCard h3,
+:global(:root[data-theme='dark']) .dummyCard .fw-semibold {
+  color: var(--text-primary);
+}
+
+:global(:root[data-theme='dark']) .passwordToggle,
+:global(:root[data-theme='dark']) .copyBtn {
+  color: #9fd869;
+}
+
+:global(:root[data-theme='dark']) .copyBtn:hover,
+:global(:root[data-theme='dark']) .passwordToggle:hover {
+  color: #c4ef99;
 }

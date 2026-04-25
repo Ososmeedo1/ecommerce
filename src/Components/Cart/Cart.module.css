@@ -7,11 +7,120 @@
   font-weight: 600;
 }
 
-.count {
-  transition: all 0.3s;
+.removeBtn {
+  border: 1px solid #e8cecf;
+  color: #c43d4a;
+  background-color: #fff7f7;
+  font-weight: 600;
+  transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease;
 }
 
-.count:hover {
+.removeBtn i {
+  color: inherit;
+}
+
+.removeBtn:hover {
+  background-color: #fce9eb;
+  border-color: #e3a9af;
+  color: #b7313d;
+}
+
+.countControls {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.3rem;
+  border-radius: 999px;
+  border: 1px solid #d5e2d8;
+  background-color: #f5f9f6;
+}
+
+.qtyBtn {
+  min-width: 34px;
+  min-height: 34px;
+  border-radius: 50%;
+  border: 1px solid #b8d6bf;
+  background-color: #ffffff;
+  color: #3f7a0d;
+  font-weight: 700;
+  line-height: 1;
+  transition: all 0.25s ease;
+}
+
+.qtyBtn:hover {
   background-color: #63AF18;
+  border-color: #63AF18;
   color: #fff;
+}
+
+.countValue {
+  min-width: 22px;
+  text-align: center;
+  font-weight: 700;
+}
+
+.couponRow {
+  max-width: 520px;
+}
+
+.couponRow input {
+  min-height: 42px;
+}
+
+.emptyState,
+.errorState {
+  margin-top: 1rem;
+  border-radius: 12px;
+  border: 1px solid #dfe8e2;
+  background: #f7faf8;
+  padding: 1rem;
+}
+
+.emptyState p,
+.errorState p {
+  color: #57665d;
+}
+
+:global(:root[data-theme='dark']) .removeBtn {
+  background-color: #3b1f22;
+  border-color: #7f434b;
+  color: #ffb4be;
+}
+
+:global(:root[data-theme='dark']) .removeBtn:hover {
+  background-color: #54292e;
+  border-color: #a15a64;
+  color: #ffd0d6;
+}
+
+:global(:root[data-theme='dark']) .countControls {
+  background-color: var(--surface-2);
+  border-color: var(--border-soft);
+}
+
+:global(:root[data-theme='dark']) .qtyBtn {
+  background-color: #24332b;
+  border-color: #3f5949;
+  color: #b9e394;
+}
+
+:global(:root[data-theme='dark']) .qtyBtn:hover {
+  background-color: #76bf38;
+  border-color: #76bf38;
+  color: #0d1511;
+}
+
+:global(:root[data-theme='dark']) .countValue {
+  color: var(--text-primary);
+}
+
+@media (max-width: 768px) {
+  .clearBtn {
+    width: auto;
+    min-width: 120px;
+  }
+
+  .countControls {
+    margin-top: 0.4rem;
+  }
 }

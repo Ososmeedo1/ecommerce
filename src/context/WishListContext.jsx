@@ -1,5 +1,5 @@
-import axios from "axios";
 import { createContext, useState } from "react";
+import { addProductToWishList, fetchWishList, removeWishListItem } from '../services/storeApi.js';
 
 export let WishListContext = createContext();
 
@@ -7,47 +7,24 @@ export let WishListContext = createContext();
 
 export default function WishListContextProvider(props) {
 
-  // let headers = {
-  //   token: localStorage.getItem('userToken')
-  // }
-
-  function headersToken() {
-    return {
-      token: localStorage.getItem('userToken')
-    };
-  }
-  
-
   const [wishListCount, setWishListCount] = useState(null)
 
   function addToWishList(productId) {
-    return axios.post(`https://ecommerce.routemisr.com/api/v1/wishlist`, {
-      productId
-    }, {
-      headers: headersToken()
-    })
-      .then((response) => response)
-      .catch((err) => err)
+    return addProductToWishList(productId)
   }
 
   function deleteWishListItems(productId) {
-    return axios.delete(`https://ecommerce.routemisr.com/api/v1/wishlist/${productId}`, {
-      headers: headersToken()
-    })
-      .then((response) => response)
-      .catch((err) => err)
+    return removeWishListItem(productId)
   }
 
   function getWishListItems() {
-    return axios.get(`https://ecommerce.routemisr.com/api/v1/wishlist`, {
-      headers: headersToken()
-    })
+    return fetchWishList()
       .then((response) => {
-        setWishListCount(response.data.count);
+        if (response?.data?.count !== undefined) {
+          setWishListCount(response.data.count);
+        }
         return response;
-        
       })
-      .catch((err) => err)
   }
 
 

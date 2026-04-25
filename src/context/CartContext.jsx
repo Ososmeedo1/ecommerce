@@ -1,5 +1,14 @@
-import axios from "axios";
 import { createContext, useState } from "react";
+import {
+  addProductToCart,
+  applyCouponToCart,
+  clearCart,
+  createCashOrder,
+  createCheckoutSession,
+  fetchCart,
+  removeCartItem,
+  updateCartItemCount
+} from '../services/storeApi.js';
 
 export let CartContext = createContext();
 
@@ -7,73 +16,53 @@ export let CartContext = createContext();
 
 export default function CartContextProvider(props) {
 
-  function headersToken() {
-    return {
-      token: localStorage.getItem('userToken')
-    };
-  }
-
   const [cartCount, setCartCount] = useState(null);
 
   function checkOutSession(cartid, shippingAddress) {
-    return axios.post(`https://ecommerce.routemisr.com/api/v1/orders/checkout-session/${cartid}?url=http://localhost:3000`, {
-      shippingAddress
-    }, {
-      headers: headersToken()
-    })
-      .then((response) => response)
-      .catch((err) => err)
+    const returnUrl = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
+    return createCheckoutSession(cartid, shippingAddress, returnUrl);
+  }
+
+  function checkOutCash(cartid, shippingAddress) {
+    return createCashOrder(cartid, shippingAddress);
   }
 
   function addToCart(productId) {
-    return axios.post(`https://ecommerce.routemisr.com/api/v1/cart`, {
-      productId
-    }, {
-      headers: headersToken()
-    })
-      .then((response) => response)
-      .catch((err) => err)
+    return addProductToCart(productId);
   }
 
   function getCartItems() {
-    return axios.get(`https://ecommerce.routemisr.com/api/v1/cart`, {
-      headers: headersToken()
-    })
+    return fetchCart()
       .then((response) => {
-        setCartCount(response.data.numOfCartItems);
+        const itemsCount = response?.data?.numOfCartItems
+          ?? response?.data?.data?.products?.length
+          ?? response?.data?.cart?.products?.length
+
+        if (itemsCount !== undefined) {
+          setCartCount(itemsCount);
+        }
         return response;
       })
-      .catch((err) => err)
   }
 
   function deleteCartItems(productId) {
-    return axios.delete(`https://ecommerce.routemisr.com/api/v1/cart/${productId}`, {
-      headers: headersToken()
-    })
-      .then((response) => response)
-      .catch((err) => err)
+    return removeCartItem(productId);
   }
 
   function updateCartItems(productId, count) {
-    return axios.put(`https://ecommerce.routemisr.com/api/v1/cart/${productId}`, {
-      count
-    }, {
-      headers: headersToken()
-    })
-      .then((response) => response)
-      .catch((err) => err)
+    return updateCartItemCount(productId, count);
   }
 
   function clearAllCartItems() {
-    return axios.delete(`https://ecommerce.routemisr.com/api/v1/cart`, {
-      headers: headersToken()
-    })
-    .then((response) => response)
-    .catch((err) => err)
+    return clearCart();
+  }
+
+  function applyCoupon(couponName) {
+    return applyCouponToCart(couponName);
   }
 
 
-  return <CartContext.Provider value={{ addToCart, getCartItems, deleteCartItems, updateCartItems , checkOutSession, clearAllCartItems, setCartCount, cartCount }}>
+  return <CartContext.Provider value={{ addToCart, getCartItems, deleteCartItems, updateCartItems, checkOutSession, checkOutCash, clearAllCartItems, applyCoupon, setCartCount, cartCount }}>
     {props.children}
   </CartContext.Provider>
 }

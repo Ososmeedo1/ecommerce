@@ -127,7 +127,10 @@ export default function HomeProducts() {
       : null}
 
     <header>
-      <h2 className='fw-bold my-3 secondary-font'>Home Products</h2>
+      <div className={style.homeHeader}>
+        <h2 className='fw-bold my-3 secondary-font'>Home Products</h2>
+        {!loading ? <p className={style.homeMeta}>{filteredProducts.length} products curated for you</p> : null}
+      </div>
       {loading ?
         <div className="row gy-4 mb-3">
           {Array.from({ length: 8 }).map((_, index) => <div key={index} className='col-md-3'>
@@ -136,14 +139,14 @@ export default function HomeProducts() {
         </div> :
         <div className="row gy-4 mb-3">
           {filteredProducts.map(product => <div key={product.id} className='col-md-3'>
-            <div className="product p-2 rounded-2 shadow">
+            <div className={`product p-2 rounded-2 shadow-sm ${style.productCard}`}>
               <Link to={`/productdetails/${product.id}`} onClick={() => trackEvent('product_opened', { productId: product.id, source: 'home_products' })}>
-                <img src={product.imageCover} className='w-100 rounded-2' alt={product.title} loading='lazy' onError={handleImageFallback} />
-                <span className='font-sm text-main'>{product.category.name}</span>
-                <h3 className='h5'>{product.title.split(' ').splice(0, 2).join(' ')}</h3>
-                <div className="d-flex py-3 justify-content-between align-items-center">
+                <img src={product.imageCover} className={`w-100 rounded-2 ${style.productImage}`} alt={product.title} loading='lazy' onError={handleImageFallback} />
+                <span className={`font-sm text-main ${style.categoryBadge}`}>{product.category.name}</span>
+                <h3 className={`h5 ${style.productTitle}`}>{product.title.split(' ').splice(0, 2).join(' ')}</h3>
+                <div className={`d-flex py-3 justify-content-between align-items-center ${style.productInfoRow}`}>
                   <span className="font-sm fw-semibold">{product.price} EGP</span>
-                  <span className='font-sm'>
+                  <span className={`font-sm ${style.ratingChip}`}>
                     <i className='fas fa-star rating-color me-1'></i>
                     {product.ratingsAverage}
                   </span>
@@ -151,11 +154,11 @@ export default function HomeProducts() {
               </Link>
 
               <div className="product-footer flex-column d-flex justify-content-between align-items-center">
-                <button className='addToCart w-100' onClick={() => { postToCart(product.id) }} disabled={pendingCartId === product.id || pendingWishId === product.id}>
+                <button className='addToCart w-100' onClick={() => { postToCart(product.id) }} disabled={pendingCartId === product.id || pendingWishId === product.id} aria-busy={pendingCartId === product.id}>
                   {pendingCartId === product.id ? 'Adding...' : 'Add to cart'}
                 </button>
-                <button className='addToWishList  mt-2 w-100' onClick={() => { postToWishList(product.id) }} disabled={pendingCartId === product.id || pendingWishId === product.id}>
-                  {pendingWishId === product.id ? 'Adding...' : 'Add to WishList'}
+                <button className='addToWishList mt-2 w-100' onClick={() => { postToWishList(product.id) }} disabled={pendingCartId === product.id || pendingWishId === product.id} aria-busy={pendingWishId === product.id}>
+                  {pendingWishId === product.id ? 'Adding...' : 'Add to wishlist'}
                 </button>
               </div>
             </div>

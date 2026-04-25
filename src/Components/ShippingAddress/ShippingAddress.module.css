@@ -1,1 +1,16 @@
 .ShippingAddress {}
+
+.paymentBlock {
+  border: 1px solid #dce6df;
+  border-radius: 12px;
+  padding: 0.85rem;
+  background-color: #f8fbf9;
+}
+
+.paymentOption {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  cursor: pointer;
+  font-weight: 500;
+}

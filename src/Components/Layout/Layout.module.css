@@ -5,7 +5,7 @@
   right: 16px;
   bottom: 16px;
   z-index: 1020;
-  background-color: #63AF18;
+  background-color: var(--main-color);
   color: #fff !important;
   border-radius: 999px;
   padding: 0.75rem 1rem;
@@ -22,8 +22,8 @@
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  background-color: #fff;
-  color: #3f7a0d;
+  background-color: var(--surface-1);
+  color: var(--main-color);
   font-weight: 700;
 }
 
