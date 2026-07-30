@@ -17,7 +17,6 @@ export default function Layout() {
 
   return <>
     <Navbar />
-    <Offline><div className="loading"><h2 className='alert alert-danger fw-bold'>Offline !</h2></div></Offline>
     <Outlet></Outlet>
     {canShowStickyCart ?
       <Link to='/cart' className={style.stickyCartBtn}>
