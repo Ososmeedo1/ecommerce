@@ -3,7 +3,7 @@ import style from './Login.module.css'
 import { useFormik } from 'formik'
 import { object, string } from 'yup'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { UserContext } from '../../context/UserContext.jsx'
+import { UserContext } from '../../context/contexts.js'
 import { PulseLoader } from 'react-spinners'
 import toast from 'react-hot-toast'
 import { getFriendlyAuthErrorMessage } from '../../utils/api.js'
@@ -29,11 +29,6 @@ export default function Login() {
   const searchParams = new URLSearchParams(location.search);
   const redirectParam = searchParams.get('redirect');
   const redirectPath = redirectParam && redirectParam.startsWith('/') ? redirectParam : '/';
-
-  function fillTestAccount() {
-    setApiError(false)
-    formik.setValues(testAccount)
-  }
 
   async function quickLogin() {
     setApiError(false)

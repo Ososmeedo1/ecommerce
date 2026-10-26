@@ -1,12 +1,10 @@
-import React, { useContext, useEffect, useRef, useState } from 'react'
+import React, { useCallback, useContext, useEffect, useRef, useState } from 'react'
 import style from './ProductDetails.module.css'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { PulseLoader } from 'react-spinners'
 import Slider from 'react-slick'
-import { CartContext } from '../../context/CartContext'
-import { WishListContext } from '../../context/WishListContext'
 import toast from 'react-hot-toast'
-import { UserContext } from '../../context/UserContext.jsx'
+import { CartContext, UserContext, WishListContext } from '../../context/contexts.js'
 import { extractApiMessage, getFriendlyActionErrorMessage, isSuccessResponse, isUnauthorizedError } from '../../utils/api.js'
 import { trackEvent } from '../../utils/analytics.js'
 import { handleImageFallback } from '../../utils/images.js'
@@ -180,7 +178,7 @@ export default function ProductDetails() {
     })
   }
 
-  async function syncWishListState() {
+  const syncWishListState = useCallback(async () => {
     if (shouldRequireLogin(userToken)) {
       setIsInWishList(false)
       return
@@ -194,13 +192,13 @@ export default function ProductDetails() {
     const wishListItems = response?.data?.data || []
     const existsInWishList = wishListItems.some((item) => item?._id === id)
     setIsInWishList(existsInWishList)
-  }
+  }, [getWishListItems, id, userToken])
 
   useEffect(() => {
     getProductDetails(id)
     getProductReviews(id)
     syncWishListState()
-  }, [id, userToken])
+  }, [id, syncWishListState])
 
   return <>
 

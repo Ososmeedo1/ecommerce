@@ -1,5 +1,4 @@
 import React from 'react'
-import style from './NotFound.module.css'
 import img from './../../assets/Animation - 1747417346926.json'
 import Lottie from 'lottie-react'
 

@@ -1,9 +1,8 @@
 
 import style from './WishList.module.css'
 import { PulseLoader } from 'react-spinners'
-import React, { useContext, useEffect, useState } from 'react'
-import { WishListContext } from '../../context/WishListContext.jsx';
-import { CartContext } from '../../context/CartContext.jsx';
+import React, { useCallback, useContext, useEffect, useState } from 'react'
+import { CartContext, WishListContext } from '../../context/contexts.js';
 import toast from 'react-hot-toast';
 import { extractApiMessage, getFriendlyActionErrorMessage, isSuccessResponse } from '../../utils/api.js';
 
@@ -18,7 +17,7 @@ export default function WishList() {
   const [pendingCartId, setPendingCartId] = useState(null)
   const [pendingDeleteId, setPendingDeleteId] = useState(null)
 
-  async function getItems() {
+  const getItems = useCallback(async () => {
     setLoading(true)
     setWishListError('')
     const response = await getWishListItems()
@@ -34,7 +33,7 @@ export default function WishList() {
     setLoading(false)
 
 
-  }
+  }, [getWishListItems])
 
   async function postToCart(id) {
     setPendingCartId(id)
@@ -71,7 +70,7 @@ export default function WishList() {
 
   useEffect(() => {
     getItems();
-  }, [])
+  }, [getItems])
 
 
   return <>

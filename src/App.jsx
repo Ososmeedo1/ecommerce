@@ -12,10 +12,8 @@ import ProductDetails from './Components/ProductDetails/ProductDetails.jsx'
 import ProtectedRoute from './Components/ProtectedRoute/ProtectedRoute.jsx'
 import { Toaster } from 'react-hot-toast'
 import WishList from './Components/WishList/WishList.jsx'
-import { CartContext } from './context/CartContext.jsx'
-import { WishListContext } from './context/WishListContext.jsx'
+import { CartContext, UserContext, WishListContext } from './context/contexts.js'
 import ShippingAddress from './Components/ShippingAddress/ShippingAddress.jsx'
-import { UserContext } from './context/UserContext.jsx'
 import ForgotPassword from './Components/ForgotPassword/ForgotPassword.jsx'
 import VerifyPassword from './Components/VerifyPassword/VerifyPassword.jsx'
 import ResetPassword from './Components/ResetPassword/ResetPassword.jsx'
@@ -28,45 +26,6 @@ export default function App() {
   let { getCartItems, setCartCount } = useContext(CartContext)
   let { getWishListItems, setWishListCount } = useContext(WishListContext)
   let { setUserToken } = useContext(UserContext);
-
-  async function getCartCount() {
-    const response = await getCartItems()
-
-    const itemsCount = response?.data?.numOfCartItems
-      ?? response?.data?.data?.products?.length
-      ?? response?.data?.cart?.products?.length
-
-    if (itemsCount !== undefined) {
-      setCartCount(itemsCount)
-      return
-    }
-
-    if (isUnauthorizedError(response)) {
-      localStorage.removeItem('userToken')
-      setUserToken(null)
-    }
-
-    setCartCount(0)
-  }
-
-  async function getWishListCount() {
-    const response = await getWishListItems()
-
-    if (response?.data?.count !== undefined) {
-      setWishListCount(response.data.count)
-      return
-    }
-
-    if (isUnauthorizedError(response)) {
-      localStorage.removeItem('userToken')
-      setUserToken(null)
-    }
-
-    setWishListCount(0)
-
-  }
-
-
 
   const routers = createBrowserRouter([
     {
@@ -90,6 +49,43 @@ export default function App() {
   ])
 
   useEffect(() => {
+    async function getCartCount() {
+      const response = await getCartItems()
+
+      const itemsCount = response?.data?.numOfCartItems
+        ?? response?.data?.data?.products?.length
+        ?? response?.data?.cart?.products?.length
+
+      if (itemsCount !== undefined) {
+        setCartCount(itemsCount)
+        return
+      }
+
+      if (isUnauthorizedError(response)) {
+        localStorage.removeItem('userToken')
+        setUserToken(null)
+      }
+
+      setCartCount(0)
+    }
+
+    async function getWishListCount() {
+      const response = await getWishListItems()
+
+      if (response?.data?.count !== undefined) {
+        setWishListCount(response.data.count)
+        return
+      }
+
+      if (isUnauthorizedError(response)) {
+        localStorage.removeItem('userToken')
+        setUserToken(null)
+      }
+
+      setWishListCount(0)
+
+    }
+
     const storedToken = localStorage.getItem('userToken')
 
     if (storedToken && !shouldRequireLogin(storedToken)) {
@@ -103,7 +99,7 @@ export default function App() {
     localStorage.removeItem('userToken')
     setUserToken(null)
 
-  }, [])
+  }, [getCartItems, getWishListItems, setCartCount, setUserToken, setWishListCount])
 
   return <>
     <RouterProvider router={routers}></RouterProvider>

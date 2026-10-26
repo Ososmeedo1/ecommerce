@@ -2,10 +2,7 @@ import React, { useContext, useEffect, useRef, useState } from 'react';
 import style from './Navbar.module.css';
 import logo from './../../assets/freshcart-logo.svg';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
-import { UserContext } from '../../context/UserContext';
-import { CartContext } from '../../context/CartContext';
-import { WishListContext } from '../../context/WishListContext';
-import { ThemeContext } from '../../context/ThemeContext.jsx';
+import { CartContext, ThemeContext, UserContext, WishListContext } from '../../context/contexts.js';
 
 export default function Navbar() {
 

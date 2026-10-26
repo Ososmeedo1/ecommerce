@@ -1,5 +1,4 @@
 import React, { useEffect } from 'react'
-import style from './Home.module.css'
 import HomeProducts from '../HomeProducts/HomeProducts'
 import MainSlider from '../MainSlider/MainSlider'
 import CategoriesSlider from '../CategoriesSlider/CategoriesSlider'

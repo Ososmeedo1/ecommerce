@@ -4,8 +4,7 @@ import Navbar from '../Navbar/Navbar'
 import { Link, Outlet, useLocation } from 'react-router-dom'
 import Footer from '../Footer/Footer'
 import { useContext } from 'react'
-import { UserContext } from '../../context/UserContext.jsx'
-import { CartContext } from '../../context/CartContext.jsx'
+import { CartContext, UserContext } from '../../context/contexts.js'
 
 export default function Layout() {
   const { userToken } = useContext(UserContext)

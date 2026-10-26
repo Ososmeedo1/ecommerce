@@ -1,23 +1,20 @@
-import { createContext, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
+import { WishListContext } from './contexts.js';
 import { addProductToWishList, fetchWishList, removeWishListItem } from '../services/storeApi.js';
-
-export let WishListContext = createContext();
-
-
 
 export default function WishListContextProvider(props) {
 
   const [wishListCount, setWishListCount] = useState(null)
 
-  function addToWishList(productId) {
+  const addToWishList = useCallback((productId) => {
     return addProductToWishList(productId)
-  }
+  }, [])
 
-  function deleteWishListItems(productId) {
+  const deleteWishListItems = useCallback((productId) => {
     return removeWishListItem(productId)
-  }
+  }, [])
 
-  function getWishListItems() {
+  const getWishListItems = useCallback(() => {
     return fetchWishList()
       .then((response) => {
         if (response?.data?.count !== undefined) {
@@ -25,10 +22,18 @@ export default function WishListContextProvider(props) {
         }
         return response;
       })
-  }
+  }, [])
 
 
-  return <WishListContext.Provider value={{ addToWishList, deleteWishListItems, getWishListItems, setWishListCount, wishListCount }}>
+  const value = useMemo(() => ({
+    addToWishList,
+    deleteWishListItems,
+    getWishListItems,
+    setWishListCount,
+    wishListCount
+  }), [addToWishList, deleteWishListItems, getWishListItems, wishListCount])
+
+  return <WishListContext.Provider value={value}>
     {props.children}
   </WishListContext.Provider>
 }

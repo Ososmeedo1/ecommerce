@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react'
-import style from './CategoriesSlider.module.css'
 import Slider from 'react-slick';
 import { fetchCategories } from '../../services/storeApi.js';
 

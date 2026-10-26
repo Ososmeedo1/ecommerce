@@ -4,7 +4,7 @@ import { useFormik } from 'formik';
 import { object, ref, string } from 'yup';
 import { useNavigate } from 'react-router-dom';
 import { PulseLoader } from 'react-spinners';
-import { UserContext } from '../../context/UserContext';
+import { UserContext } from '../../context/contexts.js';
 import { resetPassword as resetPasswordApi } from '../../services/storeApi.js';
 import { extractApiMessage } from '../../utils/api.js';
 

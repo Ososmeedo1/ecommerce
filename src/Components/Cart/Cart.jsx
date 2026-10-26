@@ -1,11 +1,24 @@
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom';
 import style from './Cart.module.css'
-import { CartContext } from '../../context/CartContext';
+import { CartContext } from '../../context/contexts.js';
 import { PulseLoader } from 'react-spinners';
 import { setPageMeta } from '../../utils/seo.js';
 import toast from 'react-hot-toast';
 import { extractApiMessage, getFriendlyActionErrorMessage, isSuccessResponse } from '../../utils/api.js';
+
+function normalizeCart(responseData) {
+  const payload = responseData || {}
+  const dataNode = payload?.data?.products ? payload.data : payload?.cart?.products ? payload.cart : payload
+  const products = dataNode?.products || []
+
+  return {
+    id: dataNode?._id || payload?.cartId || payload?.data?._id || null,
+    products,
+    totalCartPrice: dataNode?.totalCartPrice || payload?.totalCartPrice || 0,
+    numOfCartItems: payload?.numOfCartItems ?? products.length
+  }
+}
 
 export default function Cart() {
   let { getCartItems, deleteCartItems, updateCartItems, clearAllCartItems, applyCoupon } = useContext(CartContext);
@@ -17,20 +30,7 @@ export default function Cart() {
   const [couponCode, setCouponCode] = useState('')
   const [applyingCoupon, setApplyingCoupon] = useState(false)
 
-  function normalizeCart(responseData) {
-    const payload = responseData || {}
-    const dataNode = payload?.data?.products ? payload.data : payload?.cart?.products ? payload.cart : payload
-    const products = dataNode?.products || []
-
-    return {
-      id: dataNode?._id || payload?.cartId || payload?.data?._id || null,
-      products,
-      totalCartPrice: dataNode?.totalCartPrice || payload?.totalCartPrice || 0,
-      numOfCartItems: payload?.numOfCartItems ?? products.length
-    }
-  }
-
-  async function getItems() {
+  const getItems = useCallback(async () => {
     setLoading(true)
     setCartError('')
     const response = await getCartItems()
@@ -51,7 +51,7 @@ export default function Cart() {
       setCart(normalizedCart);
       setLoading(false);
     }
-  }
+  }, [getCartItems])
 
   async function deleteItem(id) {
     setPendingProductId(id)
@@ -129,7 +129,7 @@ export default function Cart() {
       description: 'Review your cart, update quantities, and continue to checkout.'
     })
 
-  }, [])
+  }, [getItems])
 
 
   return <>

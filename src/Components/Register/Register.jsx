@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import style from './Register.module.css'
 import { useFormik } from 'formik'
 import { object, ref, string } from 'yup'
