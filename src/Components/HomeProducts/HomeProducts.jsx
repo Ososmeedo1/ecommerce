@@ -35,14 +35,6 @@ export default function HomeProducts() {
     navigate('/login?redirect=/')
   }
 
-  async function getProducts() {
-    const response = await fetchProducts()
-    if (response?.data?.data) {
-      setProducts(response.data.data)
-    }
-    setLoading(false)
-  }
-
   async function postToCart(id) {
     if (shouldRequireLogin(userToken)) {
       requireLogin()
@@ -100,8 +92,30 @@ export default function HomeProducts() {
 
 
   useEffect(() => {
-    getProducts();
-  }, [])
+  let ignore = false;
+
+  async function loadProducts() {
+    try {
+      const response = await fetchProducts();
+
+      if (!ignore && response?.data?.data) {
+        setProducts(response.data.data);
+      }
+    } catch (error) {
+      console.error('Failed to load products:', error);
+    } finally {
+      if (!ignore) {
+        setLoading(false);
+      }
+    }
+  }
+
+  loadProducts();
+
+  return () => {
+    ignore = true;
+  };
+}, []);
 
   const excludedTitles = ["Logo T-Shirt", "Woman Karma", "Victus 16-D1016Ne", "Essentials Embroidered", "Adicolor Classics", "Slim Fit", "Relaxed Fit", "ESS Big", "Sportswear Club", "Court Tennis", "Crew Neck", "Standard Pattern", "Polo Collar"];
 

@@ -123,13 +123,52 @@ export default function Cart() {
 
 
   useEffect(() => {
-    getItems();
+    let ignore = false;
+
+    async function loadCart() {
+      setLoading(true);
+      setCartError('');
+
+      try {
+        const response = await getCartItems();
+
+        if (ignore) return;
+
+        if (
+          !isSuccessResponse(response) &&
+          !response?.data?.data &&
+          !response?.data?.cart
+        ) {
+          setCart(null);
+          setCartError(
+            extractApiMessage(response, 'Unable to load your cart right now.')
+          );
+          return;
+        }
+
+        const normalizedCart = normalizeCart(response.data);
+        setCart(normalizedCart.numOfCartItems === 0 ? null : normalizedCart);
+      } catch {
+        if (!ignore) {
+          setCart(null);
+          setCartError('Unable to load your cart right now.');
+        }
+      } finally {
+        if (!ignore) setLoading(false);
+      }
+    }
+
+    loadCart();
+
     setPageMeta({
       title: 'Your Cart | Fresh Cart',
       description: 'Review your cart, update quantities, and continue to checkout.'
-    })
+    });
 
-  }, [getItems])
+    return () => {
+      ignore = true;
+    };
+  }, [getCartItems]);
 
 
   return <>

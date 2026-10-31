@@ -69,8 +69,45 @@ export default function WishList() {
 
 
   useEffect(() => {
-    getItems();
-  }, [getItems])
+  let ignore = false;
+
+  async function loadWishList() {
+    setLoading(true);
+    setWishListError('');
+
+    try {
+      const response = await getWishListItems();
+
+      if (ignore) return;
+
+      if (response?.data?.data) {
+        setWishList(response.data.data);
+        return;
+      }
+
+      setWishList([]);
+      setWishListError(
+        extractApiMessage(
+          response,
+          'Unable to load wishlist items right now.'
+        )
+      );
+    } catch {
+      if (!ignore) {
+        setWishList([]);
+        setWishListError('Unable to load wishlist items right now.');
+      }
+    } finally {
+      if (!ignore) setLoading(false);
+    }
+  }
+
+  loadWishList();
+
+  return () => {
+    ignore = true;
+  };
+}, [getWishListItems]);
 
 
   return <>

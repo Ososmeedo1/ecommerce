@@ -17,17 +17,27 @@ export default function CategoriesSlider() {
     autoplay: true
   };
 
+  useEffect(() => {
+  let ignore = false;
 
-  async function getCategories() {
-    const response = await fetchCategories()
-    if (response?.data?.data) {
-      setCategories(response.data.data);
+  async function loadCategories() {
+    try {
+      const response = await fetchCategories();
+
+      if (!ignore && response?.data?.data) {
+        setCategories(response.data.data);
+      }
+    } catch (error) {
+      console.error('Failed to load categories:', error);
     }
   }
 
-  useEffect(() => {
-    getCategories();
-  }, []);
+  loadCategories();
+
+  return () => {
+    ignore = true;
+  };
+}, []);
 
   const excludedCategories = ["Baby & Toys", "Mobiles", "Music", "Men's Fashion", "Books"];
 

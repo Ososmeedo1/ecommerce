@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useEffect, useRef, useState } from 'react'
+import React, { useContext, useEffect, useRef, useState } from 'react'
 import style from './ProductDetails.module.css'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { PulseLoader } from 'react-spinners'
@@ -113,29 +113,6 @@ export default function ProductDetails() {
     pendingSetter(false)
   }
 
-  async function getProductReviews(productId) {
-    setReviewsLoading(true)
-    setReviewsError('')
-
-    const primaryResponse = await fetchProductReviews(productId)
-
-    if (primaryResponse?.data?.data) {
-      setReviews(primaryResponse.data.data)
-      setReviewsLoading(false)
-      return
-    }
-
-    const fallbackResponse = await fetchReviews({ product: productId })
-    if (fallbackResponse?.data?.data) {
-      setReviews(fallbackResponse.data.data)
-      setReviewsLoading(false)
-      return
-    }
-
-    setReviews([])
-    setReviewsError(extractApiMessage(primaryResponse, 'Reviews are currently unavailable.'))
-    setReviewsLoading(false)
-  }
 
   async function postToCart(id) {
     await withProtectedAction({
@@ -178,27 +155,115 @@ export default function ProductDetails() {
     })
   }
 
-  const syncWishListState = useCallback(async () => {
-    if (shouldRequireLogin(userToken)) {
-      setIsInWishList(false)
-      return
-    }
-
-    const response = await getWishListItems()
-    if (!response?.data?.data) {
-      setIsInWishList(false)
-      return
-    }
-    const wishListItems = response?.data?.data || []
-    const existsInWishList = wishListItems.some((item) => item?._id === id)
-    setIsInWishList(existsInWishList)
-  }, [getWishListItems, id, userToken])
-
   useEffect(() => {
-    getProductDetails(id)
-    getProductReviews(id)
-    syncWishListState()
-  }, [id, syncWishListState])
+    let ignore = false;
+
+    async function loadProductDetails() {
+      setLoading(true);
+      setDetailsError('');
+
+      try {
+        const response = await fetchProductDetails(id);
+
+        if (ignore) return;
+
+        if (!response?.data?.data) {
+          setDetailsError(
+            extractApiMessage(
+              response,
+              'Unable to load product details. Please try again.'
+            )
+          );
+          return;
+        }
+
+        const product = response.data.data;
+
+        setDetails(product);
+        setPageMeta({
+          title: `${product.title} | Fresh Cart`,
+          description: product.description,
+          image: product.imageCover
+        });
+      } catch {
+        if (!ignore) {
+          setDetailsError('Unable to load product details. Please try again.');
+        }
+      } finally {
+        if (!ignore) setLoading(false);
+      }
+    }
+
+    async function loadProductReviews() {
+      setReviewsLoading(true);
+      setReviewsError('');
+
+      try {
+        const primaryResponse = await fetchProductReviews(id);
+
+        if (ignore) return;
+
+        if (primaryResponse?.data?.data) {
+          setReviews(primaryResponse.data.data);
+          return;
+        }
+
+        const fallbackResponse = await fetchReviews({ product: id });
+
+        if (ignore) return;
+
+        if (fallbackResponse?.data?.data) {
+          setReviews(fallbackResponse.data.data);
+          return;
+        }
+
+        setReviews([]);
+        setReviewsError(
+          extractApiMessage(
+            primaryResponse,
+            'Reviews are currently unavailable.'
+          )
+        );
+      } catch {
+        if (!ignore) {
+          setReviews([]);
+          setReviewsError('Reviews are currently unavailable.');
+        }
+      } finally {
+        if (!ignore) setReviewsLoading(false);
+      }
+    }
+
+    async function loadWishListState() {
+      try {
+        if (shouldRequireLogin(userToken)) {
+          if (!ignore) setIsInWishList(false);
+          return;
+        }
+
+        const response = await getWishListItems();
+
+        if (ignore) return;
+
+        const wishListItems = response?.data?.data || [];
+        const existsInWishList = wishListItems.some(
+          (item) => item?._id === id
+        );
+
+        setIsInWishList(existsInWishList);
+      } catch {
+        if (!ignore) setIsInWishList(false);
+      }
+    }
+
+    loadProductDetails();
+    loadProductReviews();
+    loadWishListState();
+
+    return () => {
+      ignore = true;
+    };
+  }, [id, userToken, getWishListItems]);
 
   return <>
 

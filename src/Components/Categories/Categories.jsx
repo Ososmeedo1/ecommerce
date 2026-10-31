@@ -19,21 +19,34 @@ export default function Categories() {
     navigate(buildProductsCategoryQuery(category))
   }
 
-  async function getCategories() {
-    const response = await fetchCategories()
-    if (response?.data?.data) {
-      setCategories(response.data.data)
-    }
-    setLoading(false);
-  }
 
   useEffect(() => {
-    getCategories();
-    setPageMeta({
-      title: 'Categories | Fresh Cart',
-      description: 'Browse all product categories and jump directly to category products.'
+  let ignore = false;
+
+  setPageMeta({
+    title: 'Categories | Fresh Cart',
+    description: 'Browse all product categories and jump directly to category products.'
+  });
+
+  fetchCategories()
+    .then((response) => {
+      if (!ignore && response?.data?.data) {
+        setCategories(response.data.data);
+      }
     })
-  }, []);
+    .catch((error) => {
+      console.error('Failed to fetch categories:', error);
+    })
+    .finally(() => {
+      if (!ignore) {
+        setLoading(false);
+      }
+    });
+
+  return () => {
+    ignore = true;
+  };
+}, []);
 
   const excludedCategories = ["Baby & Toys", "Mobiles", "Music"];
 

@@ -120,8 +120,50 @@ export default function Products() {
 
 
   useEffect(() => {
-    getProducts(selectedCategoryId)
-  }, [selectedCategoryId])
+  let ignore = false;
+
+  async function loadProducts() {
+    setLoading(true);
+    setProductsError('');
+
+    try {
+      const params = selectedCategoryId
+        ? { 'category[in]': selectedCategoryId }
+        : undefined;
+
+      const response = await fetchProducts(params);
+
+      if (ignore) return;
+
+      if (response?.data?.data) {
+        setProducts(response.data.data);
+      } else {
+        setProducts([]);
+        setProductsError(
+          extractApiMessage(
+            response,
+            'Unable to load products right now. Please try again.'
+          )
+        );
+      }
+    } catch {
+      if (!ignore) {
+        setProducts([]);
+        setProductsError(
+          'Unable to load products right now. Please try again.'
+        );
+      }
+    } finally {
+      if (!ignore) setLoading(false);
+    }
+  }
+
+  loadProducts();
+
+  return () => {
+    ignore = true;
+  };
+}, [selectedCategoryId]);
 
   useEffect(() => {
     const title = selectedCategoryName ? `${selectedCategoryName} Products | Fresh Cart` : 'All Products | Fresh Cart'
